@@ -1,0 +1,17 @@
+git config --global user.name CauaMaximo013
+git config --global user.email maximocaua13@gmail.com
+
+dotnet new sln --name SpClima
+dotnet new mvc -o SpClima
+dotnet sln add SpClima/SpClima.csproj
+
+cd  SpClima
+
+dotnet add package Microsoft.EntityFrameworkCore --version 9.0.2
+dotnet add package Microsoft.EntityFrameworkCore.Design --version 9.0.2
+dotnet add package Microsoft.EntityFrameworkCore.Tools --version 9.0.2
+dotnet add package Microsoft.AspNetCore.Identity.EntityFrameworkCore --version 9.0.2
+dotnet add package MySql.EntityFrameworkCore --version 9.0.0
+
+criar as classes da camada de dados (Models)
+
