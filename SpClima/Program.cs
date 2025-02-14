@@ -1,7 +1,24 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using SpClima.Data;
+using SpClima.Models;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// Conexão com o banco de dados
+string conexao = builder.Configuration.GetConnectionString("SpClimaConn");
+builder.Services.AddDbContext<AppDbContext>(
+    options => options.UseMySQL(conexao)
+);
+
+// Configuração do identity
+builder.Services.AddIdentity<Usuario, IdentityRole>(
+    options => options.SingIn.RequiredConfirmedEmail = false
+).AddEntityFrameworkStores<AppDbContext>()
+.AddDefaultTokenProviders();
 
 var app = builder.Build();
 
