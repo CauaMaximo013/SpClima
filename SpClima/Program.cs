@@ -22,6 +22,14 @@ builder.Services.AddIdentity<Usuario, IdentityRole>(
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+
+    var contexto = scope.ServiceProvider
+        .GetRequiredService<AppDbContext>();
+        await contexto.Database.EnsureCreatedAsync();
+}
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
