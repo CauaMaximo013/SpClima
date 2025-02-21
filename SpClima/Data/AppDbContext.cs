@@ -14,14 +14,6 @@ public class AppDbContext : IdentityDbContext<Usuario>
     {      
     }
 
-    public AppDbContext(DbContextOptions options) : base(options)
-    {
-    }
-
-    protected AppDbContext()
-    {
-    }
-
     public DbSet<Categoria> Categorias { get; set; }
     
     public DbSet<Produto> Produtos { get; set; }
@@ -98,7 +90,7 @@ public class AppDbContext : IdentityDbContext<Usuario>
                 ValorVenda = 2000,
             },
         };
-        builder.Entity<Produto>().HasData(categorias);
+        builder.Entity<Produto>().HasData(produtos);
         #endregion
 
         #region Usuario

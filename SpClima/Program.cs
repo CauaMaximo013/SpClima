@@ -24,7 +24,6 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-
     var contexto = scope.ServiceProvider
         .GetRequiredService<AppDbContext>();
         await contexto.Database.EnsureCreatedAsync();
