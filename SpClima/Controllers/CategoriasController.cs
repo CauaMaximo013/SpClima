@@ -103,7 +103,7 @@ namespace SpClima.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nome,Foto")] Categoria categoria)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nome,Foto")] Categoria categoria, IFormFile Arquivo)
         {
             if (id != categoria.Id)
             {
@@ -114,6 +114,17 @@ namespace SpClima.Controllers
             {
                 try
                 {
+                    if(Arquivo !=null)
+                    {
+                        string filename = categoria.Id + Path.GetExtension(Arquivo.FileName);
+                        string caminho = Path.Combine(_host.WebRootPath, "img\\categorias");
+                        string novoArquivo = Path.Combine(caminho,filename);
+                        using(var stream = new FileStream(novoArquivo, FileMode.Create))
+                        {
+                            Arquivo.CopyTo(stream);
+                        }
+                        categoria.Foto = "\\img\\categoria\\" + filename;
+                    }
                     _context.Update(categoria);
                     await _context.SaveChangesAsync();
                 }
@@ -128,6 +139,7 @@ namespace SpClima.Controllers
                         throw;
                     }
                 }
+                TempData["Sucess"] = "Categoria Alterada com Sucesso!";
                 return RedirectToAction(nameof(Index));
             }
             return View(categoria);
@@ -163,6 +175,7 @@ namespace SpClima.Controllers
             }
 
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Categoria Excluída com Sucesso!";
             return RedirectToAction(nameof(Index));
         }
 
