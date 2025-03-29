@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SpClima.Controllers;
 
+[Authorize(Roles = "Administrador")]
 public class AdminController : Controller
 {
     private readonly ILogger<AdminController> _logger;
