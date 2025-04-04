@@ -6,8 +6,7 @@ using SpClima.ViewModels;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SpClima.Controllers;
-
-    public class AccountController : Controller
+public class AccountController : Controller
     {
         private readonly ILogger<AccountController> _logger;
         private readonly SignInManager<Usuario> _singInManager;
@@ -28,7 +27,6 @@ namespace SpClima.Controllers;
         }
 
         [HttpGet]
-
         public IActionResult Login(string returnUrl)
         {
             LoginVM login = new()
@@ -36,6 +34,33 @@ namespace SpClima.Controllers;
                 UrlRetorno = returnUrl ?? Url.Content("~/")
             };
             return View(login);
+        }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Login(LoginVM login)
+        {
+            if (ModelState.IsValid)
+            {
+                string userName = login.Email;
+                if (IsValidEmail(login.Email))
+                {
+                    var user = await _userManager.FindByEmailAsync(Login.Email);
+                    if(user != null)
+                     userName = user.userName;
+                }
+
+                var result = await _signInManager.PasswordSignInAsync(
+                    userName, login.Senha, login.Lembrar, lockoutOnFailure: true
+                );
+                 if (result.Succeeded) {
+                    _logger.LogWarning($"Usuário {login.Email} acessou o sistema");
+                    return LocalRedirect(login.UrlRetorno);
+                 }
+                
+                if(result.IsLockedOut) {
+                    _logger.LogWarning($"Usuário {login.Email} está bloqueado");
+                }
+            }
         }
     }

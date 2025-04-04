@@ -1,7 +1,7 @@
 @model SpClima.ViewModels.LoginVM
 @{
     ViewData["Tittle"] = "Login";
-    Layout = "~/View/Shared/_LayoutAccount.cshtml";
+    Layout = "~/Views/Shared/_LayoutAccount.cshtml";
 }
 <div class="container">
     <div class="row justify-content-center">
@@ -16,7 +16,7 @@
                         <div asp-validation-summary="ModelOnly" hidden></div>
                         <input type="hidden" asp-for="UrlRetorno">
                         <div class="form-floating-mb-3">
-                            <input class="form-control" asp-for+"Email" />
+                            <input class="form-control" asp-for="Email" />
                             <label asp-for="Email"></label>
                             <span asp-validation-for="Email" class="text-danger text-sm"></span>
                         </div>
@@ -26,7 +26,7 @@
                             <span asp-validation-for="Senha" class="text-danger text-sm"></span>
                         </div>
                         <div class="form-check mb-3">
-                            <input class="form-check-input" asp-for="Lembrar" type="=" checkbox" value="" />
+                            <input class="form-check-input" asp-for="Lembrar" type=" checkbox" value="" />
                             <label class="form-check-label" asp-for="Lembrar"></label>
                         </div>
                         <div class="d-flex flex-column align-items-center justify-content-center mt-4 mb-0">
@@ -43,8 +43,9 @@
         </div>
     </div>
 </div>
+
 @section Scripts {
-    <partial name="_ValdationsScriptsPartial.cshtml"></partial>
+    <partial name="_ValidationScriptsPartial.cshtml"></partial>
     <script type="text/javascript">
     
         let mensagemErro = '';
@@ -58,5 +59,4 @@
                 'error'
             );
     </script>
-
 }
