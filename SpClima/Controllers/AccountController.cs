@@ -1,66 +1,101 @@
-
+using System.Net.Mail;
+using System.Security.Claims;
 using SpClima.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SpClima.ViewModels;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace SpClima.Controllers;
 public class AccountController : Controller
+{
+    private readonly ILogger<AccountController> _logger;
+    private readonly SignInManager<Usuario> _signInManager;
+    private readonly UserManager<Usuario> _userManager;
+    private readonly IWebHostEnvironment _host;
+
+    public AccountController(
+        ILogger<AccountController> logger,
+        SignInManager<Usuario> signInManager,
+        UserManager<Usuario> userManager,
+        IWebHostEnvironment host
+    )
     {
-        private readonly ILogger<AccountController> _logger;
-        private readonly SignInManager<Usuario> _singInManager;
-        private readonly UserManager<Usuario> _userManager;
-        private readonly IWebHostEnvironment _host;
+        _logger = logger;
+        _signInManager = signInManager;
+        _userManager = userManager;
+        _host = host;
+    }
 
-        public AccountController(
-            ILogger<AccountController> logger,
-            SignInManager<Usuario> signInManager,
-            UserManager<Usuario> userManager,
-            IWebHostEnvironment host
-        )
+    [HttpGet]
+    public IActionResult Login(string returnUrl)
+    {
+        LoginVM login = new()
         {
-            _logger = logger;
-            _singInManager = signInManager;
-            _userManager = userManager;
-            _host = host;
-        }
+            UrlRetorno = returnUrl ?? Url.Content("~/")
+        };
+        return View(login);
+    }
 
-        [HttpGet]
-        public IActionResult Login(string returnUrl)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Login(LoginVM login)
+    {
+        if (ModelState.IsValid)
         {
-            LoginVM login = new()
+            string userName = login.Email;
+            if (IsValidEmail(login.Email))
             {
-                UrlRetorno = returnUrl ?? Url.Content("~/")
-            };
-            return View(login);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginVM login)
-        {
-            if (ModelState.IsValid)
-            {
-                string userName = login.Email;
-                if (IsValidEmail(login.Email))
-                {
-                    var user = await _userManager.FindByEmailAsync(Login.Email);
-                    if(user != null)
-                     userName = user.userName;
-                }
-
-                var result = await _signInManager.PasswordSignInAsync(
-                    userName, login.Senha, login.Lembrar, lockoutOnFailure: true
-                );
-                 if (result.Succeeded) {
-                    _logger.LogWarning($"Usuário {login.Email} acessou o sistema");
-                    return LocalRedirect(login.UrlRetorno);
-                 }
-                
-                if(result.IsLockedOut) {
-                    _logger.LogWarning($"Usuário {login.Email} está bloqueado");
-                }
+                var user = await _userManager.FindByEmailAsync(login.Email);
+                if (user != null)
+                    userName = user.UserName;
             }
+
+            var result = await _signInManager.PasswordSignInAsync(
+                userName, login.Senha, login.Lembrar, lockoutOnFailure: true
+            );
+            if (result.Succeeded)
+            {
+                _logger.LogInformation($"Usuário {login.Email} acessou o sistema");
+                return LocalRedirect(login.UrlRetorno);
+            }
+
+            if (result.IsLockedOut)
+            {
+                _logger.LogWarning($"Usuário {login.Email} está bloqueado");
+                ModelState.AddModelError("", "Sua conta está bloqueada, aguarde alguns minutos e tente novamente!!");
+            }
+            else
+            if (result.IsNotAllowed)
+            {
+                _logger.LogWarning($"Usuário {login.Email} não confirmou sua conta");
+                ModelState.AddModelError(string.Empty, "Sua conta não está confirmada, verifique seu email!!");
+            }
+            else
+                ModelState.AddModelError(string.Empty, "Usuário e/ou Senha Inválidos!!!");
+        }
+        return View(login);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Logout()
+    {
+        _logger.LogInformation($"Usuário {ClaimTypes.Email} fez logoff");
+        await _signInManager.SignOutAsync();
+        return RedirectToAction("Index", "Home");
+    }
+
+    public bool IsValidEmail(string email)
+    {
+        try
+        {
+            MailAddress m = new(email);
+            return true;
+        }
+        catch (FormatException)
+        {
+            return false;
         }
     }
+
+}
