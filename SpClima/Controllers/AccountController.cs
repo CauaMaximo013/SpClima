@@ -98,49 +98,54 @@ public class AccountController : Controller
         return View(register);
     }
 
-[HttpPost]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> Registro(RegistroVM registro)
-{
-    if (ModelState.IsValid)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Registro(RegistroVM registro)
     {
-        var usuario = Activator.CreateInstance<Usuario>();
-        usuario.Nome = registro.Nome;
-        usuario.DataNascimento = registro.DataNascimento;
-        usuario.UserName = registro.Email;
-        usuario.NormalizedUserName = registro.Email.ToUpper();
-        usuario.Email = registro.Email;
-        usuario.NormalizedEmail = registro.Email.ToUpper();
-        usuario.EmailConfirmed = true;
-        var result = await _userManager.CreateAsync(usuario, registro.Senha);
-
-        if (result.Succeeded)
+        if (ModelState.IsValid)
         {
-            _logger.LogInformation($"Novo usuário registrado com o email {registro.Email}.");
+            var usuario = Activator.CreateInstance<Usuario>();
+            usuario.Nome = registro.Nome;
+            usuario.DataNascimento = registro.DataNascimento;
+            usuario.UserName = registro.Email;
+            usuario.NormalizedUserName = registro.Email.ToUpper();
+            usuario.Email = registro.Email;
+            usuario.NormalizedEmail = registro.Email.ToUpper();
+            usuario.EmailConfirmed = true;
+            var result = await _userManager.CreateAsync(usuario, registro.Senha);
 
-            await _userManager.AddToRoleAsync(usuario, "Cliente");
-
-            if (registro.Foto != null)
+            if (result.Succeeded)
             {
-                string nomeArquivo = usuario.Id + Path.GetExtension(registro.Foto.FileName);
-                string caminho = Path.Combine(_host.WebRootPath, @"img\usuarios");
-                string novoArquivo = Path.Combine(caminho, nomeArquivo);
-                using (var stream = new FileStream(novoArquivo, FileMode.Create))
-                {
-                    registro.Foto.CopyTo(stream);
-                }
-                usuario.Foto = @"\img\usuario\" + nomeArquivo;
-                await _db.SaveChangesAsync();
-            }
-            TempData["Sucess"] = "Conta Criada com Sucesso!";
-            return RedirectToAction(nameof(Login));
-        }
+                _logger.LogInformation($"Novo usuário registrado com o email {registro.Email}.");
 
-        foreach (var error in result.Errors)
-            ModelState.AddModelError(string.Empty, TranslateIdentityErrors.TranslateErrorMessage(error.Code));
+                await _userManager.AddToRoleAsync(usuario, "Cliente");
+
+                if (registro.Foto != null)
+                {
+                    string nomeArquivo = usuario.Id + Path.GetExtension(registro.Foto.FileName);
+                    string caminho = Path.Combine(_host.WebRootPath, @"img\usuarios");
+                    string novoArquivo = Path.Combine(caminho, nomeArquivo);
+                    using (var stream = new FileStream(novoArquivo, FileMode.Create))
+                    {
+                        registro.Foto.CopyTo(stream);
+                    }
+                    usuario.Foto = @"\img\usuario\" + nomeArquivo;
+                    await _db.SaveChangesAsync();
+                }
+                TempData["Sucess"] = "Conta Criada com Sucesso!";
+                return RedirectToAction(nameof(Login));
+            }
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, TranslateIdentityErrors.TranslateErrorMessage(error.Code));
+        }
+        return View(registro);
     }
-    return View(registro);
-}
+
+    public IActionResult AccessDenied()
+    {
+        return View();
+    }
 
     public bool IsValidEmail(string email)
     {
