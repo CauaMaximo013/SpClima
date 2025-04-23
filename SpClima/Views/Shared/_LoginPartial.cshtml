@@ -4,7 +4,7 @@
 @inject UserManager<Usuario> UserManager
 @{
     var user = UserManager.GetUserName(User);
-    var Usuario = _db.Usuarios.FirstOrDefault(u => u.UserName == user);
+    var usuario = _db.Usuarios.FirstOrDefault(u => u.UserName == user);
 }
 
 @if (!SignInManager.IsSignedIn(User))
